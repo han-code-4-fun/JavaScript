@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Welcome to the Movie Center!</title>
+		<style>
+			li{
+				margin-left: 30px;
+			}
+			#next{
+				margin-left: 30px;
+			}
+			h3{
+				color:red;
+			}
+			.modal {
+				display: none; /* Hidden by default */
+				position: fixed; /* Stay in place */
+				z-index: 1; /* Sit on top */
+				padding-top: 100px; /* Location of the box */
+				left: 0;
+				top: 0;
+				width: 100%; /* Full width */
+				height: 100%; /* Full height */
+				overflow: auto; /* Enable scroll if needed */
+				background-color: rgb(0,0,0); /* Fallback color */
+				background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+			}
+			.modalContent {
+				background-color: #fefefe;
+				margin: auto;
+				padding: 20px;
+				border: 1px solid #888;
+				width:fit-content;
+				color:slateblue;
+			}
+			.close{
+				color:red;
+				float:right;
+				top: 1px;
+				position: relative;
+				z-index: 1;
+				font-size: 36px;
+				font-weight:bolder;
+			}
+			.close:hover,
+			.close:focus {
+				color:teal;
+				text-decoration:springgreen;
+				cursor: pointer;
+			}
+		</style>
+	</head>
+	<body>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+		<script>
+			var pageNum = 1;
+			var url1 = 'https://api.themoviedb.org/3/discover/movie?'+
+						'sort_by=popularity.desc&api_key=3ea0a40bc08c'+
+						'5fa7471ef35099ebce44&page=';
+			function getResult(pageNum){
+				$.ajax({
+					
+					url:url1 + pageNum,
+					type:'GET',
+					dataType:'json',
+					success: function(response){
+							$('#result').html('');
+						var title,vote_count, vote_average,popularity,release_date,overview;
+						response.results.forEach(element => {
+							title = '<li><span title="'+ element.overview +'"><b>Movie title:</b>'+
+										' <span class="openModal">'+ element.title+'</span></span></li>';
+							vote_count = '<li><b>Vote count: </b>'+element.vote_count + '</li>';
+							vote_average = '<li ><b>Vote average: </b>'+element.vote_average + '</li>';
+							popularity = '<li><b>Popularity:</b> '+element.popularity + '</li>';
+							release_date = '<li><b>Release date:</b> '+element.release_date + 
+										'</li><br /><br />';
+							$('#result').append(title);
+							
+							$('#result').append(vote_count);
+							$('#result').append(vote_average);
+							$('#result').append(popularity);
+							$('#result').append(release_date);
+
+							
+						});
+					
+					
+					}//end of success
+					
+				}).done(function(){
+					$('.openModal').on('click',function(){
+						$('#movieInfo').html('');
+						var titleThis = $(this).html();
+						var path = '';
+						var releaseDate = '';
+						$.ajax({
+						
+						url:url1 + pageNum,
+						type:'GET',
+						dataType:'json',
+						success: function(response){
+							for(var i = 0; i < response.results.length;i++){
+								if (response.results[i].title==titleThis){
+									path = response.results[i].poster_path;
+									releaseDate = response.results[i].release_date;
+									break;
+								}
+
+							} 
+							$('#movieInfo').append('<li>'+titleThis+'</li>');
+							$('#movieInfo').append('<li><img src="https://image.tmdb.org/t/p/w500'+ 
+										path +'" alt="'+titleThis+'" title="'+ titleThis+'"></li>');
+							$('#movieInfo').append('<li>'+releaseDate+'</li>');
+							
+
+							modal.style.display = 'block';
+							
+						
+						
+						}//end of success
+						
+					});//end of ajax call
+
+
+
+
+					
+					});//end of openModal event	
+
+				$('.close').on('click', function(){
+					modal.style.display = 'none';
+					
+				});
+				
+					
+				window.onclick = function(event) {
+					if (event.target == modal) {
+						modal.style.display = "none";
+					}
+				}
+
+
+				});//end of ajax call
+
+			}
+			$(document).ready(function(){
+				
+				getResult(pageNum);
+
+
+
+				$('a').on('click', function(event){
+					event.preventDefault();
+
+					if($(this).attr('id')=='previous'){
+						if (pageNum != 1){
+							pageNum = pageNum -1;
+
+							getResult(pageNum);
+						}else{
+							alert('This is the first page!');
+						}
+					}else{//clicked next page
+						pageNum = pageNum + 1;
+						
+						getResult(pageNum);
+
+					}
+
+					//end of on-click event
+				});
+				
+				
+				
+			
+			//end of document.ready
+			}
+			);
+			
+			
+		</script>
+	
+		<div id="result">
+			
+		</div>
+		<div id="modal" class="modal">
+			<div class="modalContent">
+				<span class="close" title="Click to close">
+					&times;
+				</span><!--the above span only for closing-->
+				<div id="movieInfo"></div>
+
+			</div>
+
+		</div>
+		
+		<a href="" id="previous">Previous Page</a>
+		<a  href= "" id="next">Next Page</a>
+		
+	</body>
+</html>

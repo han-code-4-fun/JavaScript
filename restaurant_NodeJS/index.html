@@ -1,0 +1,248 @@
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Yelp Search</title>
+	<style>
+		body{
+			text-align: left;
+		}
+		select{
+			margin: 1%;
+			
+		}
+		#submit{
+			margin:1%;
+
+		}
+		.point{
+			position:relative;
+		}
+		.link{
+			position:absolute;
+			float:right;
+			margin-left: 40px;
+		}
+	
+		
+		
+		
+	</style>
+
+</head>
+<body>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+<script defer>
+	$(document).ready(function(){
+		var resultURL = 'http://localhost:3001/restaurants?';
+
+
+		$("#cuisine").change(function(event) {
+			var cuisine = 'cuisine='+$("#cuisine").val() +'&';
+			
+			if(cuisine!=='none') {
+				resultURL = resultURL + cuisine;
+			}
+		});
+		$("#sortBy").change(function(event) {
+			var sortBy = 'sortBy='+$("#sortBy").val() +'&';
+			
+			if(sortBy!=='none') {
+				resultURL = resultURL + sortBy;
+			}
+		});
+		$("#price").change(function(event) {
+			var price = 'price='+ $("#price").val() +'&';
+			
+			if(price!=='none') {
+				resultURL = resultURL + price;
+			}
+		});
+
+
+		$('#submit').on('click',function(){
+			$('#result').html('');
+			var resultURL = 'http://localhost:3001/restaurants?';
+			var cuisine = 'cuisine='+$("#cuisine").val() +'&';
+			var sortBy = 'sortBy='+$("#sortBy").val() +'&';
+			var price = 'price='+ $("#price").val() +'&';
+
+			if($("#cuisine").val()!=='none') {
+				resultURL = resultURL + cuisine;
+			}
+			if($("#sortBy").val()!=='none') {
+				resultURL = resultURL + sortBy;
+			}
+			if($("#price").val()!=='none') {
+				resultURL = resultURL + price;
+			}
+
+		$.ajax( {
+				url:resultURL,
+				type:'GET',
+				dataType:'json',
+				success: function(response){
+					for(var i = 0;i<10;i++){
+						var namex, url, reviewCount,rating,price,id,location;
+						
+						location = '<b>Location</b>: ';
+						namex = '<b>Restaurant Name</b>: '+ response.businesses[i].name;
+						url = '<b>Restaurant link</b>: '+ response.businesses[i].url;
+						reviewCount = '<b>Review Count</b>: '+ response.businesses[i].review_count;
+						rating = '<b>Rating</b>: '+ response.businesses[i].rating;
+						price = '<b>Price</b>: '+ response.businesses[i].price;
+						id = 'http://localhost:3001/reviews?'+ 'id='+response.businesses[i].id;
+						response.businesses[i].location.display_address.forEach(element => {
+							 location = location + element+' ';
+						});
+						 
+						var x = i+ 1;
+												
+						$('#result').append('<li>'+ namex +'</li>');
+						$('#result').append('<li>'+ url +'</li>');
+						$('#result').append('<li>'+ reviewCount +'</li>');
+						$('#result').append('<li>'+ rating +'</li>');
+						$('#result').append('<li>'+ price +'</li>');
+						$('#result').append('<li class="point" id="L'+ x +'"> '+ location +
+										'<i><a class="link" href="'+ id+'" id="r'+
+											x +'">See Reviews</a><i></li>');
+				
+						
+						$('#result').append('<br />');
+
+						
+
+					};
+
+					
+				},
+				error: function(err){
+					console.log(err);
+					$('#result').html(err);
+				}
+
+
+
+
+		} ).done(function(){
+
+			$('.link').on('click',function(){
+			event.preventDefault();
+			
+				
+			 if($(this).html() == "See Reviews"){
+				$('.reviewS').remove();	
+				var reviewID=	 $(this).attr('id');
+				reviewID = reviewID[1];
+				var tem = $(this).attr('href');
+				//$('#test').html('<h1>test</h1>');
+					
+			 	function getResult(input){
+					var tempRst = '';
+					for(var idx= 0; idx<3;idx++){
+						tempRst=tempRst+'<li class="reviewS">" '+input.reviews[idx].text+'"</li>';
+					}
+						
+					var addID = '#L'+reviewID;
+				
+					//this is to add the review after <li>
+				$(addID).after(tempRst);
+				};	
+
+				 $.ajax({
+					url: tem,
+					type: 'GET',
+					dataType: 'json',
+					success: getResult							
+				});  
+				
+
+				 //end of if function
+				 $('.link').html("See Reviews");
+				 $(this).html("Close Reviews");
+				
+			}else if($(this).html() == "Close Reviews"){
+				$('.reviewS').remove();
+				$(this).html('See Reviews');
+				$('.link').html('See Reviews');
+
+			} 
+
+			
+			}); 
+
+
+		});
+		
+ 		
+
+					
+
+
+/* $('.aPos').ready(function(){
+	
+
+
+}); */
+
+
+
+
+
+
+
+});
+
+
+
+});
+
+
+	
+
+				
+
+
+
+
+
+
+
+</script>
+<div id ="test">
+
+</div>
+
+<select id="cuisine">
+	<option value="none" selected>Choose a Cuisine</option>
+	<option value="italian" >Italian</option>
+	<option value="mexican">Mexican</option>
+	<option value="chinese">Chinese</option>
+	<option value="japanese">Japanese</option>
+</select>
+<select id="sortBy">
+	<option value="none" selected>Sort the result</option>
+	<option value="best_match" >Best_match</option>
+	<option value="rating">Rating</option>
+	<option value="review_count">Review_count</option>
+	
+</select>
+<select id="price">
+	<option value="none" selected>Choose a price range</option>
+	<option value="1" >Inexpensive</option>
+	<option value="2">Moderate</option>
+	<option value="3">Pricey</option>
+	<option value="4">Ultra High-End</option>
+</select>
+	<br />
+	<input type="submit" value="Submit" id='submit'>
+	
+	<div id="result">
+			
+
+	</div>
+	
+	
+	
+		
+</body>
+</html>
